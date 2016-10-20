@@ -2,9 +2,9 @@ import numpy as np
 
 
 class Histogram():
-    """
+    '''
     Class to storage histograms
-    """
+    '''
     def __init__ (self,data=[], nbin = 'nada', minlim = 'nada',maxlim = 'nada'):
         '''
         Crea un histograma a partir de una lista (por defecto vacía), 
