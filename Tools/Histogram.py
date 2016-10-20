@@ -5,12 +5,13 @@ class Histogram():
     '''
     Class to storage histograms
     '''
-    def __init__ (self,data=[], nbin = 'nada', minlim = 'nada',maxlim = 'nada'):
+    def __init__ (self,data=[], nbin = None, minlim = None, maxlim = None):
         '''
-        Crea un histograma a partir de una lista (por defecto vacía), 
-        con limites inferior y superior, que por defecto seran el 
-        maximo y el minimo de los datos y un numero de bines, que 
-        por defecto sera la raiz del numero de datos
+        Creates an histogram from a given a list (empty by defoult), 
+        with low and high limits, by defoult are the minimum and maximum 
+        of de data sample and the bin number, by default the number of
+        data squareroot
+        
         '''  
         
         N = len(data)
@@ -27,15 +28,15 @@ class Histogram():
                 self.nbin = nbin
             
         else:
-            if minlim=='nada':
+            if minlim==None:
                 self.minlim = min(data)
             else:
                 self.minlim =minlim
-            if maxlim=='nada':
+            if maxlim==None:
                 self.maxlim = max(data)
             else:
                 self.maxlim = maxlim 
-            if nbin=='nada':
+            if nbin==None:
                 self.nbin = int(N**0.5)
             else:
                 self.nbin = nbin
