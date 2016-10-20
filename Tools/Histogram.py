@@ -81,3 +81,4 @@ class Histogram():
         Explicit __rmul__, scales the histogram by a factor
         '''
         self.hist *= factor
+        return self
