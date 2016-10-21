@@ -1,4 +1,3 @@
-# %load ../Tools/Histogram.py
 import numpy as np
 
 
@@ -6,12 +5,14 @@ class Histogram():
     '''
     Class to storage histograms
     '''
-    def __init__(self, data=[], nbin=None, minlim=None, maxlim=None):
+    def __init__(self, data=[], nbin=None, minlim=None, maxlim=None,
+                 name='default', isotope='default', volume='default',
+                  material='default'):
         '''
         Creates an histogram from a given a list (empty by defoult),
-        with low and high limits, by defoult are the minimum and maximum
-        of de data sample and the bin number, by default the number of
-        data squareroot
+        with low and high limits, by defoult are the minimum and
+        maximum of de data sample and the bin number, by default
+        the number of data squareroot
         '''
 
         if len(data) == 0:
@@ -44,6 +45,11 @@ class Histogram():
         self.bins = np.array([])
 
         self.Build_hist(data)
+
+        self.name = name
+        self.isotope = isotope
+        self.volume = volume
+        self.material = material
 
     def __add__(self, hist):
         '''

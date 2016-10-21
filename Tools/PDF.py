@@ -1,30 +1,47 @@
-import numpy as np
-import scipy as sp
+import scipy.interpolate as spip
+
 
 class PDF():
-    """
-    docstring for PDF
-    It takes the samplename, the isotope, the volume, matherial where the bkg
-    comes form, the file name where to look for the pdf, the key name in the TTRee
+    '''
+    Class to deal with spectrum and build a PDF interpolating an histogram
+    '''
     
-    """
+    def __init__ (self, histogram = [], name='default', isotope='default',
+                 volume='default', material='default', interpolation='linear',
+                 labelcopy=False):
 
-    def __init__(self, exposure = None , low_edge = None , high_edge = None):
-        self.nsamples = 0
-        self.names = []
-        self.histos = []
-        self.low_edge = low_edge
-        self.high_edge = high_edge
-        self.exposure = exposure
-        self.name = " "
-        
-    def Print(self):
-        print "PDF for the spectrum of:"
-        print self.name
-        
-    def ImportHistogram
+        if not labelcopy:
+            self.name = name
+            self.isotope = isotope
+            self.volume = volume
+            self.material = material
+        else:
+            self.name = histogram.name
+            self.isotope = histogram.isotope
+            self.volume = histogram.volume
+            self.material = histogram.material
+
+        self.Int = 0
+        self.minlim = 0
+        self.maxlim = 0
+        self.pdf = spip.interp1d
+        self.interpolation = interpolation
+        if histogram:
+            self.Build_PDF(histogram)
+
+    def Build_PDF(self, hist):
+        hist.Scale(1./(hist.hist.sum()*hist.binsize))
+        self.pdf = spip.interp1d( hist.bins, hist.hist,
+                                kind=self.interpolation, bounds_error=False)
+        self.minlim = hist.bins[0]
+        self.maxlim = hist.bins[-1]
+        self.Int = self.pdf.y.sum()*(self.pdf.x[1]-self.pdf.x[0])
+
+        return
     
-    
-    
-    
-    #samplename, isotope, volume, material, filename, keyname,                exposure,energy=None,lower_edge=None,higher_edge=None,gauss=False, rlim = 0.01)
+    def Scale(self, factor):
+        x = self.pdf.x
+        y = factor*self.pdf.y
+        self.pdf = spip.interp1d( x, y, kind=self.interpolation, bounds_error=False)
+        self.Int *= factor
+        return self
