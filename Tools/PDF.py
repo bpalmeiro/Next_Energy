@@ -30,6 +30,12 @@ class PDF():
             self.Build_PDF(histogram)
 
     def Build_PDF(self, hist):
+        '''
+        It builds the pdf from the histogram normalazing
+        that is that the integral (number of events) is
+        one
+        '''
+        
         hist.Scale(1./(hist.hist.sum()*hist.binsize))
         self.pdf = spip.interp1d( hist.bins, hist.hist,
                                 kind=self.interpolation, bounds_error=False)
@@ -40,6 +46,10 @@ class PDF():
         return
     
     def Scale(self, factor):
+        '''
+        Method to scale the pdf. It also refresh the integral
+        counter
+        '''
         x = self.pdf.x
         y = factor*self.pdf.y
         self.pdf = spip.interp1d( x, y, kind=self.interpolation, bounds_error=False)
