@@ -7,7 +7,7 @@ class Histogram():
     '''
     def __init__(self, data=[], nbin=None, minlim=None, maxlim=None,
                  name='default', isotope='default', volume='default',
-                  material='default'):
+                 material='default'):
         '''
         Creates an histogram from a given a list (empty by defoult),
         with low and high limits, by defoult are the minimum and
