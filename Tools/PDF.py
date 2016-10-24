@@ -6,9 +6,9 @@ class PDF():
     Class to deal with spectrum and build a PDF interpolating an histogram
     '''
 
-    def __init__(self, histogram=[], name='default', isotope='default',
-                 volume='default', material='default', interpolation='linear',
-                 labelcopy=False):
+    def __init__(self, histogram=[], factor=1., name='default',
+                 isotope='default', volume='default', material='default',
+                 interpolation='linear', labelcopy=False):
 
         if not labelcopy:
             self.name = name
@@ -21,22 +21,22 @@ class PDF():
             self.volume = histogram.volume
             self.material = histogram.material
 
-        self.Int = 0
+        self.Int = factor
         self.minlim = 0
         self.maxlim = 0
         self.pdf = spip.interp1d
         self.interpolation = interpolation
         if histogram:
-            self.Build_PDF(histogram)
+            self.Build_PDF(histogram, factor)
 
-    def Build_PDF(self, hist):
+    def Build_PDF(self, hist, factor):
         '''
         It builds the pdf from the histogram normalazing
         that is that the integral (number of events) is
         one
         '''
 
-        hist.Scale(1./(hist.hist.sum()*hist.binsize))
+        hist.Scale(float(factor)/(hist.hist.sum()*hist.binsize))
         self.pdf = spip.interp1d(hist.bins, hist.hist,
                                  kind=self.interpolation, bounds_error=False)
         self.minlim = hist.bins[0]
