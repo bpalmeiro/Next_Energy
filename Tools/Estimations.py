@@ -3,23 +3,23 @@ import numpy as np
 
 class BkgExpectation(trun=1., BckRej=1.):
     '''
-    Class meant to yield an dictionry with the expected number 
+    Class meant to yield an dictionry with the expected number
     of events for backgrounds for all the isotopes.
-    
+
     Input values:
-    
+
     trun is meant to be in years
-    
+
     BckRej is the fraction of Bck events rejected by topological
     cuts (it is a toy cut). It goes from 0 (perfect rejection)
     to 1 (no rejection)
     '''
 
-    self.trun = trun #y
-    self.texp = trun * 24 * 3600 #s
+    self.trun = trun  # y
+    self.texp = trun * 24 * 3600  # s
     self.BckRej = BckRej
-    
-    self.Expected = {60 : {}, 40 : {} , 214 : {} , 208: {} }
+
+    self.Expected = {60: {}, 40: {}, 214: {}, 208: {}}
     self.BuildDic()
 
     def BuildDic(self)
@@ -102,6 +102,7 @@ class BkgExpectation(trun=1., BckRej=1.):
              16 : int(round(7.067467e-4 * 9.68e1  /1000.   *texp * BgrRej))
              }
         }
+
     def GetValue(isotope, part='all', partlist=[]):
         '''
         Returns the expected value for the parte selected. If all
@@ -121,20 +122,20 @@ class BkgExpectation(trun=1., BckRej=1.):
                     aux += self.Expected[isotope][i]
         else:
             return sum(Expected[isotope].values())
-    
+
     def ReBuild(trun=1., BckRej=1.):
         '''
         Rebuilds the dictionary with a new trun and BckRej
         '''        
-        self.trun = trun #y
-        self.texp = trun * 24 * 3600 #s
-        self.BckRej = BckRej
 
-        self.Expected = {60 : {}, 40 : {} , 214 : {} , 208: {} }
+        self.trun = trun  # y
+        self.texp = trun * 24 * 3600  # s
+        self.BckRej = BckRej
         self.BuildDic()
-        
+
     def __getitem__(self, isotope):
         '''
-        Defines behavior for when an item is accessed, using the notation self[key]
+        Defines behavior for when an item is accessed, using the notation
+        self[key]
         '''
         return self.Expectation[isotope]
