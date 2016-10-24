@@ -1,9 +1,43 @@
 import numpy as np
 
 
-class BkgExpectation(trun=1., BckRej=1.):
+def XeEstimation(mass=5.81, purity=0.91, trun=100, SigAcc=1.):
     '''
-    Class meant to yield an dictionry with the expected number
+    Fuction meant to yield the expected number of events for 136Xe
+
+    Input values:
+
+    mass: Xe (all isotopes) mass in kg
+    putiry
+    trun is meant to be in years
+
+    SigAcc is the fraction of events accepted by topological
+    cuts (it is a toy cut). It goes from 0 (no event accepted)
+    to 1 (all the events accepted)
+    '''
+
+    Nav = 6.022140857e23  # mol^-1
+    Mmol = 135.907214484  # gmol
+    ln2 = log(2)
+
+    trun *= 1./365.24
+
+    t12 = 2.165e21
+    et12 = 0.061e21
+
+    lamb = ln2/t12
+    slamb = ln2*et12/t12**2
+
+    N0 = Nav*mass*1000*purity/Mmol
+
+    Nfin = N0*lamb*trun*SigAcc
+
+    return Nfin
+
+
+def BkgExpectation(trun=1., BckRej=1.):
+    '''
+    Fuction meant to yield an dictionry with the expected number
     of events for backgrounds for all the isotopes.
 
     Input values:
@@ -15,20 +49,8 @@ class BkgExpectation(trun=1., BckRej=1.):
     to 1 (no rejection)
     '''
 
-    self.trun = trun  # y
-    self.texp = trun * 24 * 3600  # s
-    self.BckRej = BckRej
-
-    self.Expected = {60: {}, 40: {}, 214: {}, 208: {}}
-    self.BuildDic()
-
-    def BuildDic(self)
-    '''
-    It builds the dictionary
-    '''
-    texp = self.texp
-    BgrRej = self.BgrRej
-    self.Expected = {
+    texp = trun * 24 * 3600  # s
+    Expected = {
         60: {0 :  int(round(3.935333e-2 * 0       /1000.   *texp * BgrRej)),
              1 :  int(round(1.781900e-2 * 2.32e-1 /1000.   *texp * BgrRej)),
              2 :  int(round(2.663240e-3 * 8.82    /1000.   *texp * BgrRej)),
@@ -102,40 +124,4 @@ class BkgExpectation(trun=1., BckRej=1.):
              16 : int(round(7.067467e-4 * 9.68e1  /1000.   *texp * BgrRej))
              }
         }
-
-    def GetValue(isotope, part='all', partlist=[]):
-        '''
-        Returns the expected value for the parte selected. If all
-        is selected, returns all the events expected from every single part
-        for the selected isotope. If multiple is selected, it sums all the 
-        contributions from the parts in partlist
-        '''
-
-        if not part=='all':
-            if not part=='multiple'
-                return self.Expected[isotope][part]
-            else:
-                if not len(partlist)>0:
-                    raise ValueError('Multiple selection requires a part list')
-                aux = 0
-                for i in partlist:
-                    aux += self.Expected[isotope][i]
-        else:
-            return sum(Expected[isotope].values())
-
-    def ReBuild(trun=1., BckRej=1.):
-        '''
-        Rebuilds the dictionary with a new trun and BckRej
-        '''        
-
-        self.trun = trun  # y
-        self.texp = trun * 24 * 3600  # s
-        self.BckRej = BckRej
-        self.BuildDic()
-
-    def __getitem__(self, isotope):
-        '''
-        Defines behavior for when an item is accessed, using the notation
-        self[key]
-        '''
-        return self.Expectation[isotope]
+    return Expected
