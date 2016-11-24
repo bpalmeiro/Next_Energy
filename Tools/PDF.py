@@ -9,7 +9,20 @@ class PDF():
     def __init__(self, histogram=[], factor=1., name='default',
                  isotope='default', volume='default', material='default',
                  interpolation='linear', labelcopy=False):
-
+        '''
+        histogram: hist to build the PDF from
+        factor: factor to scale the PDF
+        name: name for the PDF
+        isotope, volume, material: info about PDF and hist data
+        interpolation: interpolation method, as in scipy.interpolate.interp1d:
+            Specifies the kind of interpolation as a string (‘linear’,
+            ‘nearest’, ‘zero’, ‘slinear’, ‘quadratic, ‘cubic’ where ‘slinear’,
+            ‘quadratic’ and ‘cubic’ refer to a spline interpolation of first,
+            second or third order) or as an integer specifying the order of the
+            spline interpolator to use. Default is ‘linear’.
+        labelcopy: if True, the isotope, volume and material info is copied
+            from hist one
+        '''
         if not labelcopy:
             self.name = name
             self.isotope = isotope
