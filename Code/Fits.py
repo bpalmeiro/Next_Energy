@@ -6,9 +6,10 @@ from scipy.stats import poisson
 import scipy.optimize as sop
 import numpy as np
 from scipy.special import gamma
+from copy import copy
 
-def generalPoisson(x,mu):
-    return np.exp(-mu)*np.power(mu,x)/gamma(x+1)
+def generalLogPoisson(x,mu):
+    return -mu+x*np.log(mu)-np.log(gamma(x+1))
 
 
 class Fit():
@@ -23,9 +24,13 @@ class Fit():
         nevs: normalizations for the spectra (they are the
             initial values for the fit)
         '''
-        self.E = E
-        self.spectrum = spectrum
-        self.PDFs = [pdf.Scale(1./pdf.Int) for pdf in PDFs]
+        self.E = E[:]
+        self.spectrum = spectrum.hist[:]
+        for i in PDFs:
+            print(i.Int)
+        self.PDFs = copy(PDFs)#[pdf.Scale(1./pdf.Int) for pdf in PDFs]
+        for i in PDFs:
+            print(i.Int)
 
     def LogLikelihood(self, nevs):
         '''
@@ -33,19 +38,21 @@ class Fit():
         '''
         print(self.PDFs,nevs)
         ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,nevs)]) for Ei in self.E])
-        ydat = np.array(self.spectrum)
-        lm = (np.array(generalPoisson(ydat,ypdf)))
-        lm = np.log(np.abs(lm)).sum()
-        plt.plot(self.E,ypdf)
-        plt.plot(self.E,ydat,'+')
+        ydat = self.spectrum
+        print(type(ydat))
+        print(type(ypdf))
+        lm = (np.array(generalLogPoisson(ydat,ypdf))).sum()
+        #plt.plot(self.E,ypdf)
+        #plt.plot(self.E,ydat,'+')
 
         return -lm
 
     def FitLLM(self,nevs):
+        nevs = np.array(nevs)
         fit = self.LogLikelihood
         res = sop.minimize(fit,nevs)
         ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,res.x)]) for Ei in self.E])
-        ydat = np.array(self.spectrum)
+        ydat = self.spectrum
         chi2 = -1
         if (res.success):
             chi2 = np.sum((ypdf-ydat)**2)/(1.*(len(ypdf)-len(nevs)))
