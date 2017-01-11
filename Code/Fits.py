@@ -1,3 +1,4 @@
+# %load ../Code/Fits.py
 import Estimation as st
 from Histogram import Histogram as hist
 from PDF import PDF
@@ -10,8 +11,10 @@ from scipy.special import gammaln
 from copy import copy
 
 def generalLogPoisson(x,mu):
-    return -mu+x*np.log(mu+0.001)-gammaln(x+1)
-
+    try:
+        return (-mu+x*np.log(mu+0.00001)-gammaln(x+1))
+    except:
+        print(mu)
 
 class Fit():
     '''
@@ -26,63 +29,81 @@ class Fit():
             initial values for the fit)
         '''
         self.E = E[:]
-        self.Ep = np.linspace(0.5,2.8,100)
         self.spectrum = spectrum.hist[:]
-        for i in PDFs:
-            print(i.Int)
-        self.PDFs = copy(PDFs)#[pdf.Scale(1./pdf.Int) for pdf in PDFs]
-        for i in PDFs:
-            print(i.Int)
+        self.PDFs = copy(PDFs)
+        self.PDF_Val = np.array([np.array(pdfi.pdf(E)) for pdfi in self.PDFs])
 
     def LogLikelihood(self, nevs):
         '''
         function meant to compute the LogLikelihood
         '''
-        #print(self.PDFs,nevs)
-        for i in nevs:
-            if i<0.: return 1e12
-        ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,nevs)]) for Ei in self.E])
+        nevs = nevs.reshape(len(nevs),1)
+        ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         ydat = self.spectrum
-        #print(type(ydat))
-        #print(type(ypdf))
         lm = (np.array(generalLogPoisson(ydat,ypdf))).sum()
-
-
         return -lm
 
-    def FitLLM(self,nevs, **kwargs):
-        nevs = np.array(nevs)
+
+
+    def FitLLM(self,nevs,bounds=None, **kwargs):
+        nevs = nevs.reshape(len(np.array(nevs)),1)
         fit = self.LogLikelihood
+        if bounds==None:
+            bounds = [[0,None] ] *(len(nevs))
+        #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
         res = sop.minimize(fit,nevs,method='Nelder-Mead',**kwargs)
-        ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,res.x)]) for Ei in self.E])
-
+        ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         ydat = self.spectrum
-
-        plt.plot(self.E,ypdf)
-        plt.plot(self.E,ydat,'+')
-        plt.semilogy()
-        plt.ylim([1e-1,3e3])
         chi2 = -1
         if (res.success):
-            chi2 = np.sum((ypdf-ydat)**2)/(1.*(len(ypdf)-len(nevs)))
+            chi2 = np.sum((ypdf-ydat)**2/((ydat+0.0001)*(len(ypdf)-len(nevs))))
         res.chi2 = chi2
         return res
 
-    def LeastSQ(self,nevs):
+    def FitLLMScan(self,nevs, fixn, npoint=100, **kwargs):
+        nevs = nevs.reshape(len(np.array(nevs)),1)
+        aux = nevs[fixn]
+        aux_evs = np.delete(nevs,fixn)
+        fun_aux = self.FitLLM(nevs, **kwargs).fun
+        res_list = []
+        for aux_s in np.linspace(0,2*aux,npoint):
+            fit = lambda x_nevs: self.LogLikelihood(np.insert(x_nevs,fixn,aux_s))
+            #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
+            res = sop.minimize(fit,aux_evs,method='Nelder-Mead',**kwargs)
+            res_list.append(res.fun-fun_aux)
+            #print(aux_s,res)
+            if not(res.success):
+                print('error')
+
+        return np.linspace(0,2*aux,npoint),res_list
+    def GetError(self, nevs, **kwargs):
+        error = []
+        nevs = nevs.reshape(len(np.array(nevs)),1)
+        for fixn in range(1):#len(nevs)):
+
+            aux = nevs[fixn]
+            aux_evs = np.delete(nevs,fixn)
+            fun_aux = self.FitLLM(nevs, **kwargs).fun
+            res_list = []
+
+            fit = lambda aux_s:  (lambda x_nevs: self.LogLikelihood(np.insert(aux_evs,fixn,aux_s)) )
+            #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
+            res = lambda aux_s: sop.minimize(fit(aux_s),aux_evs,method='Nelder-Mead',**kwargs)
+            print(sop.brenth(res,0,aux))
+            #res_list.append(res.fun-fun_aux)
+            #print(aux_s,res)
+           # if not(res.success):
+            #    print('error')
+
+
+
+    def GetSpectra(self,E,*nevs):
         ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,nevs)]) for Ei in self.E])
-        ydat = self.spectrum
-        return np.power(ypdf-ydat,2).sum()
+        #print ypdf
+        return ypdf
 
     def FitLeastSQ(self,nevs,**kwargs):
         nevs = np.array(nevs)
-        fit = self.LeastSQ
-        res = sop.minimize(fit,nevs,method='Nelder-Mead',**kwargs)
-        ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,res.x)]) for Ei in self.E])
-        ydat = self.spectrum
-        chi2 = -1
-        plt.plot(self.E,ypdf)
-        plt.plot(self.E,ydat,'+')
-        if (res.success):
-            chi2 = np.sum((ypdf-ydat)**2)/(1.*(len(ypdf)-len(nevs)))
-        res.chi2 = chi2
+        fit = self.GetSpectra
+        res = sop.curve_fit(fit,self.E,self.spectrum, nevs)
         return res
