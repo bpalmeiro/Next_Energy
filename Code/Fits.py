@@ -1,4 +1,3 @@
-# %load ../Code/Fits.py
 import Estimation as st
 from Histogram import Histogram as hist
 from PDF import PDF
@@ -11,7 +10,7 @@ from scipy.special import gammaln
 from copy import copy
 
 def generalLogPoisson(x,mu):
-    #mu[mu<-2e-11] = np.nan
+    #Çmu[mu<-2e-11] = np.nan
     '''for i in mu:
         if i<-2e-11:
 
@@ -55,9 +54,12 @@ class Fit():
         ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         ydat = self.spectrum
         chi2 = -1
+        err = -1
         if (res.success):
             chi2 = np.sum((ypdf-ydat)**2/((ydat+0.0001)*(len(ypdf)-len(nevs))))
+            err = self.GetError(res.x)
         res.chi2 = chi2
+        res.err = err
         return res
 
     def FitLLMScan(self,nevs, fixn, npoint=100, **kwargs):
@@ -71,30 +73,24 @@ class Fit():
             #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
             res = sop.minimize(fit,aux_evs,method='Nelder-Mead',**kwargs)
             res_list.append(res.fun-fun_aux)
-            print(aux_s,res)
+            #print(aux_s,res)
             if not(res.success):
                 print('error')
-
         return np.linspace(0,2*aux,npoint),res_list
+
     def GetError(self, nevsmin, **kwargs):
         error = []
-        nevsmin = nevsmin.reshape(len(np.array(nevsmin)),1)
-        #res_list = np.zeros()
+        nevs = nevsmin.reshape(len(np.array(nevsmin)),1)
+        res_list = np.zeros(len(nevsmin))
         for fixn in range(len(nevsmin)):
 
-            aux = nevsmin[fixn]
-            aux_evs = np.delete(nevsmin,fixn)
+            aux = nevs[fixn]
+            aux_evs = np.delete(nevs,fixn)
             fit = lambda aux_s:  (lambda x_nevs: self.LogLikelihood(np.insert(x_nevs,fixn,aux_s)) )
             #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
             res = lambda aux_ss: (sop.minimize(fit(aux_ss),aux_evs,method='Nelder-Mead',**kwargs)).fun-1-715.134906606767
-            sop.root(res,aux-aux**0.5).x
-            #print(fixn,)
-            #res_list.append(res.fun-fun_aux)
-            #print(aux_s,res)
-        return res
-           # if not(res.success):
-            #    print('error')
-
+            res_list[fixn] = (sop.root(res,aux-aux**0.5).x)[0]
+        return nevsmin-res_list
 
 
     def GetSpectra(self,E,*nevs):
