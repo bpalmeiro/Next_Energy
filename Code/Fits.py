@@ -11,10 +11,13 @@ from scipy.special import gammaln
 from copy import copy
 
 def generalLogPoisson(x,mu):
-    try:
-        return (-mu+x*np.log(mu+0.00001)-gammaln(x+1))
-    except:
-        print(mu)
+    #mu[mu<-2e-11] = np.nan
+    '''for i in mu:
+        if i<-2e-11:
+
+       print(i)
+    '''
+    return (-mu+x*np.log(mu+0.00001)-gammaln(x+1))
 
 class Fit():
     '''
@@ -41,16 +44,13 @@ class Fit():
         ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         ydat = self.spectrum
         lm = (np.array(generalLogPoisson(ydat,ypdf))).sum()
-        return -lm
+        return -2*lm
 
 
 
     def FitLLM(self,nevs,bounds=None, **kwargs):
         nevs = nevs.reshape(len(np.array(nevs)),1)
         fit = self.LogLikelihood
-        if bounds==None:
-            bounds = [[0,None] ] *(len(nevs))
-        #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
         res = sop.minimize(fit,nevs,method='Nelder-Mead',**kwargs)
         ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         ydat = self.spectrum
@@ -71,27 +71,27 @@ class Fit():
             #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
             res = sop.minimize(fit,aux_evs,method='Nelder-Mead',**kwargs)
             res_list.append(res.fun-fun_aux)
-            #print(aux_s,res)
+            print(aux_s,res)
             if not(res.success):
                 print('error')
 
         return np.linspace(0,2*aux,npoint),res_list
-    def GetError(self, nevs, **kwargs):
+    def GetError(self, nevsmin, **kwargs):
         error = []
-        nevs = nevs.reshape(len(np.array(nevs)),1)
-        for fixn in range(1):#len(nevs)):
+        nevsmin = nevsmin.reshape(len(np.array(nevsmin)),1)
+        #res_list = np.zeros()
+        for fixn in range(len(nevsmin)):
 
-            aux = nevs[fixn]
-            aux_evs = np.delete(nevs,fixn)
-            fun_aux = self.FitLLM(nevs, **kwargs).fun
-            res_list = []
-
-            fit = lambda aux_s:  (lambda x_nevs: self.LogLikelihood(np.insert(aux_evs,fixn,aux_s)) )
+            aux = nevsmin[fixn]
+            aux_evs = np.delete(nevsmin,fixn)
+            fit = lambda aux_s:  (lambda x_nevs: self.LogLikelihood(np.insert(x_nevs,fixn,aux_s)) )
             #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
-            res = lambda aux_s: sop.minimize(fit(aux_s),aux_evs,method='Nelder-Mead',**kwargs)
-            print(sop.brenth(res,0,aux))
+            res = lambda aux_ss: (sop.minimize(fit(aux_ss),aux_evs,method='Nelder-Mead',**kwargs)).fun-1-715.134906606767
+            sop.root(res,aux-aux**0.5).x
+            #print(fixn,)
             #res_list.append(res.fun-fun_aux)
             #print(aux_s,res)
+        return res
            # if not(res.success):
             #    print('error')
 
