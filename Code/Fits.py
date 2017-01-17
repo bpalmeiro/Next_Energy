@@ -1,3 +1,4 @@
+# %load ../Code/Fits.py
 import Estimation as st
 from Histogram import Histogram as hist
 from PDF import PDF
@@ -10,12 +11,7 @@ from scipy.special import gammaln
 from copy import copy
 
 def generalLogPoisson(x,mu):
-    #Çmu[mu<-2e-11] = np.nan
-    '''for i in mu:
-        if i<-2e-11:
-
-       print(i)
-    '''
+    #mu[mu<-2e-11] = np.nan
     return (-mu+x*np.log(mu+0.00001)-gammaln(x+1))
 
 class Fit():
@@ -24,18 +20,17 @@ class Fit():
     '''
     def __init__(self, E, spectrum, PDFs):
         '''
-        E: x range (np array)
-        spectrum: experimental points
+        E: x range (np array) spectrum: experimental points
         PDF: list of spectra PDFs
-        nevs: normalizations for the spectra (they are the
-            initial values for the fit)
+        nevs: normalizations for the spectra (they are the initial
+              values for the fit)
         '''
         self.E = E[:]
         self.spectrum = spectrum.hist[:]
         self.PDFs = copy(PDFs)
         self.PDF_Val = np.array([np.array(pdfi.pdf(E)) for pdfi in self.PDFs])
 
-    def LogLikelihood(self, nevs):
+    def LLh(self, nevs):
         '''
         function meant to compute the LogLikelihood
         '''
@@ -45,13 +40,15 @@ class Fit():
         lm = (np.array(generalLogPoisson(ydat,ypdf))).sum()
         return -2*lm
 
-
-
-    def FitLLM(self,nevs,bounds=None, **kwargs):
-        nevs = nevs.reshape(len(np.array(nevs)),1)
-        fit = self.LogLikelihood
-        res = sop.minimize(fit,nevs,method='Nelder-Mead',**kwargs)
-        ypdf = np.sum(nevs*self.PDF_Val,axis=0)
+    def FitLLM(self, nevs, **kwargs):
+        '''
+        function meant to perform the LogLikelihood fit to data using nevs as
+        the initial values
+        '''
+        nevs = nevs.reshape(len(np.array(nevs)), 1)
+        fit = self.LLh
+        res = sop.minimize(fit, nevs, method='Nelder-Mead', **kwargs)
+        ypdf = np.sum(nevs*self.PDF_Val, axis=0)
         ydat = self.spectrum
         chi2 = -1
         err = -1
@@ -62,40 +59,52 @@ class Fit():
         res.err = err
         return res
 
-    def FitLLMScan(self,nevs, fixn, npoint=100, **kwargs):
-        nevs = nevs.reshape(len(np.array(nevs)),1)
+    def FitLLMScan(self, nevs, fixn, npoint=100, **kwargs):
+        '''
+        function meant to return the LogLikelihood profile to data using:
+            nevs as the initial values
+            fixn as the index of the variable along the profile is made
+            npoint as the number of points computed from 0 to 2 times the
+                minimim value
+        '''
+        nevs = nevs.reshape(len(np.array(nevs)), 1)
         aux = nevs[fixn]
-        aux_evs = np.delete(nevs,fixn)
+        aux_evs = np.delete(nevs, fixn)
         fun_aux = self.FitLLM(nevs, **kwargs).fun
-        res_list = []
-        for aux_s in np.linspace(0,2*aux,npoint):
-            fit = lambda x_nevs: self.LogLikelihood(np.insert(x_nevs,fixn,aux_s))
-            #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
-            res = sop.minimize(fit,aux_evs,method='Nelder-Mead',**kwargs)
-            res_list.append(res.fun-fun_aux)
-            #print(aux_s,res)
+        res_list = np.zeros(2*aux,npoint)
+        i = 0
+        for aux_s in np.linspace(0, 2*aux,npoint):
+            fit = lambda x_nevs: self.LLh(np.insert(x_nevs, fixn,aux_s))
+            res = sop.minimize(fit ,aux_evs, method='Nelder-Mead', **kwargs)
+            res_list[i] = res.fun-fun_aux
+            i += 1
             if not(res.success):
                 print('error')
-        return np.linspace(0,2*aux,npoint),res_list
+        return np.linspace(0, 2*aux,npoint), res_list
 
     def GetError(self, nevsmin, **kwargs):
-        error = []
+        '''
+        function meant to compite the LogLikelihood fit errors using nevsmin as
+        the minimum value (fit result)
+        '''
         nevs = nevsmin.reshape(len(np.array(nevsmin)),1)
         res_list = np.zeros(len(nevsmin))
-        for fixn in range(len(nevsmin)):
-
+        ll_min = self.LLh(nevsmin)
+        for fixn in np.arange(len(nevsmin)):
             aux = nevs[fixn]
             aux_evs = np.delete(nevs,fixn)
-            fit = lambda aux_s:  (lambda x_nevs: self.LogLikelihood(np.insert(x_nevs,fixn,aux_s)) )
-            #res = sop.minimize(fit,nevs,method='L-BFGS-B',bounds = bounds,**kwargs)
-            res = lambda aux_ss: (sop.minimize(fit(aux_ss),aux_evs,method='Nelder-Mead',**kwargs)).fun-1-715.134906606767
+            fit = lambda aux_s: (lambda x_nevs: self.LLh(np.insert(x_nevs,
+                                                                   fixn,
+                                                                   aux_s)))
+            res = lambda aux_ss: (sop.minimize(fit(aux_ss), aux_evs,
+                                               method='Nelder-Mead',
+                                               **kwargs)).fun-1-ll_min
             res_list[fixn] = (sop.root(res,aux-aux**0.5).x)[0]
         return nevsmin-res_list
 
 
     def GetSpectra(self,E,*nevs):
-        ypdf = np.array([sum([n*pdfi.pdf(Ei) for pdfi,n in zip(self.PDFs,nevs)]) for Ei in self.E])
-        #print ypdf
+        ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         return ypdf
 
     def FitLeastSQ(self,nevs,**kwargs):
