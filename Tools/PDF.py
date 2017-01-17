@@ -1,5 +1,6 @@
 import scipy.interpolate as spip
-from copy import copy
+from copy import deepcopy
+
 
 class PDF():
     '''
@@ -40,7 +41,7 @@ class PDF():
         self.pdf = spip.interp1d
         self.interpolation = interpolation
         if histogram:
-            self.Build_PDF(copy(histogram), factor)
+            self.Build_PDF(deepcopy(histogram), factor)
 
     def Build_PDF(self, hist, factor):
         '''
@@ -49,7 +50,7 @@ class PDF():
         one
         '''
 
-        hist.Scale(float(factor)/(hist.hist.sum())) #*hist.binsize)
+        hist.Scale(float(factor)/(hist.hist.sum()))  # *hist.binsize)
         self.pdf = spip.interp1d(hist.bins, hist.hist,
                                  kind=self.interpolation, bounds_error=False)
         self.minlim = hist.bins[0]

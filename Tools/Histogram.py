@@ -28,14 +28,17 @@ class Histogram():
 
         else:
             if minlim is None:
+                #If no min given, it takes the data min
                 self.minlim = min(data)
             else:
                 self.minlim = minlim
             if maxlim is None:
+                #If no max given, it takes the data max
                 self.maxlim = max(data)
             else:
                 self.maxlim = maxlim
             if nbin is None:
+                 #If no nbin given, it takes the square root of len(data)
                 self.nbin = int(len(data)**0.5)
             else:
                 self.nbin = nbin

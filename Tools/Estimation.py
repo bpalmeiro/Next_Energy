@@ -6,14 +6,12 @@ def XeEstimation(mass=5.81, purity=0.91, trun=100, SigAcc=1.):
     Fuction meant to yield the expected number of events for 136Xe
 
     Input values:
-
-    mass: Xe (all isotopes) mass in kg
-    putiry
-    trun is meant to be in years
-
-    SigAcc is the fraction of events accepted by topological
-    cuts (it is a toy cut). It goes from 0 (no event accepted)
-    to 1 (all the events accepted)
+        mass: Xe (all isotopes) mass in kg
+        putiry: 136Xe purity in isotopic abundance fraction
+        trun: run duration. It is meant to be in days
+        SigAcc: fraction of events accepted by topological
+            cuts (it is a toy cut). It goes from 0 (no event accepted)
+            to 1 (all the events accepted)
     '''
 
     Nav = 6.022140857e23  # mol^-1
@@ -41,12 +39,10 @@ def BkgExpectation(trun=100., BkgRej=1.):
     of events for backgrounds for all the isotopes.
 
     Input values:
-
-    trun is meant to be in days
-
-    BckRej is the fraction of Bck events rejected by topological
-    cuts (it is a toy cut). It goes from 0 (perfect rejection)
-    to 1 (no rejection)
+        trun: run duration. It is meant to be in days
+        BckRej: fraction of Bck events rejected by topological
+            cuts (it is a toy cut). It goes from 0 (perfect rejection)
+            to 1 (no rejection)
     '''
 
     texp = trun * 24 * 3600  # s
