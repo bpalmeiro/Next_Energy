@@ -126,7 +126,8 @@ def fit_simple(func, x, y, seed=()):
     Parameters
     ----------
     func : string
-        Function name
+        Function nameec("local['fit_fun'] = {}".format(str_fun)) in globals(), locals()
+    fit_fun = local["fit_fun"
     x, y : iterables
         Data sets to be fitted.
     seed : sequence
@@ -294,7 +295,7 @@ def profileXY(xdata, ydata, zdata, nbinsx, nbinsy,
     Compute the xy-axis binned average of a dataset.
     Parameters
     ----------
-    xdata, ydata, zdata : 1-dim np.ndarray
+    xdata, ydata, zdata : 1-dim np.ndarrayauxbins = auxbins[:-1] + np.diff(auxbins)/2.
         x, y, z coordinates from a dataset.
     nbinsx, nbinsy : int
         Number of divisions in each axis.
