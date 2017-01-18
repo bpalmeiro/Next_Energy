@@ -1,14 +1,10 @@
-# %load ../Code/Fits.py
 import Estimation as st
 from Histogram import Histogram as hist
 from PDF import PDF
-from Utils import IsotopeDic, PartDic
-from scipy.stats import poisson
-import matplotlib.pylab as plt
 import scipy.optimize as sop
 import numpy as np
 from scipy.special import gammaln
-from copy import copy
+from copy import deepcopy
 
 def generalLogPoisson(x,mu):
     #mu[mu<-2e-11] = np.nan
@@ -27,7 +23,7 @@ class Fit():
         '''
         self.E = E[:]
         self.spectrum = spectrum.hist[:]
-        self.PDFs = copy(PDFs)
+        self.PDFs = deepcopy(PDFs)
         self.PDF_Val = np.array([np.array(pdfi.pdf(E)) for pdfi in self.PDFs])
 
     def LLh(self, nevs):
@@ -103,12 +99,21 @@ class Fit():
         return nevsmin-res_list
 
 
-    def GetSpectra(self,E,*nevs):
+    def GetSpectra(self,E,nevs):
+        nevs = np.array(nevs)
+        nevs = nevs.reshape(len(nevs), 1)
+        ypdf = np.sum(nevs*self.PDF_Val,axis=0)
+        return ypdf
+
+    def GetSpectraSQ(self,E,*nevs):
+        nevs = np.array(nevs)
+        nevs = nevs.reshape(len(nevs), 1)
         ypdf = np.sum(nevs*self.PDF_Val,axis=0)
         return ypdf
 
     def FitLeastSQ(self,nevs,**kwargs):
         nevs = np.array(nevs)
-        fit = self.GetSpectra
+        nevs = nevs.reshape(len(nevs), 1)
+        fit = self.GetSpectraSQ
         res = sop.curve_fit(fit,self.E,self.spectrum, nevs)
         return res
