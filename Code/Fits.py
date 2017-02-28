@@ -1,4 +1,3 @@
-import Estimation as st
 from Histogram import Histogram as hist
 from PDF import PDF
 import scipy.optimize as sop
@@ -8,6 +7,10 @@ from copy import deepcopy
 
 
 def generalLogPoisson(x, mu):
+    '''
+    Returns the natural logarithm of the probability value of "x"
+    for a Poisson distribution with mean "mu"
+    '''
     return (-mu+x*np.log(mu+0.00001)-gammaln(x+1))
 
 
@@ -100,18 +103,32 @@ class Fit():
         return nevsmin-res_list
 
     def GetSpectra(self, E, nevs):
+        '''
+        Returns y values for an energy range (np array) and a
+        given nevs configuration.
+        '''
         nevs = np.array(nevs)
         nevs = nevs.reshape(len(nevs), 1)
         ypdf = np.sum(nevs*self.PDF_Val, axis=0)
         return ypdf
 
     def GetSpectraSQ(self, E, *nevs):
+        '''
+        It is the same as GetSpectra but tunned to be used in less
+        squares method.
+        Returns y values for an energy range (np array) and a
+        given nevs configuration.
+        '''
         nevs = np.array(nevs)
         nevs = nevs.reshape(len(nevs), 1)
         ypdf = np.sum(nevs*self.PDF_Val, axis=0)
         return ypdf
 
     def FitLeastSQ(self, nevs, **kwargs):
+        '''
+        function meant to perform the less squares fit to data using nevs as
+        the initial values
+        '''
         nevs = np.array(nevs)
         nevs = nevs.reshape(len(nevs), 1)
         fit = self.GetSpectraSQ

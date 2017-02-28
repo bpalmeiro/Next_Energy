@@ -69,7 +69,8 @@ class Histogram():
 
     def Build_hist(self, data):
         '''
-        Creating histogram using numpy ones but with bin centers instead
+        Creating histogram using numpy one but with bin centers instead of
+        bin edges
         '''
         auxhist, auxbins = np.histogram(np.array(data), self.nbin,
                                         [self.minlim, self.maxlim])
@@ -79,7 +80,7 @@ class Histogram():
 
     def Fill_hist(self, data):
         '''
-        Filling histogram
+        Filling histogram from a np array
         '''
         data = np.array(data)
         self.hist += np.histogram(np.array(data), self.nbin, [self.minlim,
