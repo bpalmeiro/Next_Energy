@@ -1,6 +1,7 @@
 from Histogram import Histogram as hist
 from PDF import PDF
 import scipy.optimize as sop
+import scipy.stats as sps
 import numpy as np
 from scipy.special import gammaln
 from copy import deepcopy
@@ -48,12 +49,13 @@ class Fit():
         nevs = nevs.reshape(len(np.array(nevs)), 1)
         fit = self.LLh
         res = sop.minimize(fit, nevs, method='Nelder-Mead', **kwargs)
-        ypdf = np.sum(nevs*self.PDF_Val, axis=0)
+        ypdf = np.sum(res.x.reshape(len(res.x), 1)*self.PDF_Val, axis=0)
         ydat = self.spectrum
         chi2 = -1
         err = -1
         if (res.success):
-            chi2 = np.sum((ypdf-ydat)**2/((ydat+0.0001)*(len(ypdf)-len(nevs))))
+            chi2 = list(deepcopy(sps.chisquare(ydat, ypdf, len(nevs))))
+            chi2[0] *= 1./len(nevs)
             err = self.GetError(res.x)
         res.chi2 = chi2
         res.err = err
