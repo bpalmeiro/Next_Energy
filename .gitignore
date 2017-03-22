@@ -1,7 +1,6 @@
 *.csv
 *.pyc
 setup.sh
-.ipynb*
-*.ipynb_checkpoints
-*.pdf
+*.ipynb*
+*.ipynb_checkpoint
 *.h5
