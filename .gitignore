@@ -4,3 +4,4 @@ setup.sh
 *.ipynb*
 *.ipynb_checkpoint
 *.h5
+*.pdf
