@@ -2,5 +2,6 @@
 *.pyc
 setup.sh
 .ipynb*
-.ipynb_checkpoints
-.pdf
+*.ipynb_checkpoints
+*.pdf
+*.h5
