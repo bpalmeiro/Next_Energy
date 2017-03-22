@@ -129,7 +129,7 @@ def test_LLh_fun_PoissNullList(mu0, mu1, mu2):
     val_test = LLh(mu)
     assert_allclose(2*mu.sum(), val_test)
 
-@pytest.mark.skip
+#@pytest.mark.skip
 @pytest.mark.slowtest
 @given(floats(min_value=10, max_value=50),
        floats(min_value=10, max_value=50))
@@ -144,7 +144,7 @@ def test_LLh_min_StraightLine_NoSmearing(a, b):
     res   = tl.minimize_LLh(func, ydata, [a,b], False)
     assert_allclose(res.x, [a,b], rtol=1e-5)
 
-@pytest.mark.skip
+#@pytest.mark.skip
 @pytest.mark.slowtest
 @given(floats(min_value=1000, max_value=1050),
        floats(min_value=1000, max_value=1050))
@@ -160,7 +160,7 @@ def test_LLh_min_StraightLine_Smearing(a, b):
     res   = tl.minimize_LLh(func, ydata, [a,b], False)
     assert_allclose(res.x, [a,b], rtol=1e-2)
 
-@pytest.mark.skip
+#@pytest.mark.skip
 @pytest.mark.slowtest
 @given(floats(min_value=1000, max_value=1050),
        floats(min_value=1000, max_value=1050))
@@ -176,7 +176,7 @@ def test_LLh_min_2Gauss_Smearing(a, b):
     res   = tl.minimize_LLh(func, ydata, [a,b], False)
     assert_allclose(res.x, [a,b], rtol=1e-2)
 
-@pytest.mark.skip
+#@pytest.mark.skip
 @pytest.mark.slowtest
 @given(floats(min_value=1000, max_value=1050),
        floats(min_value=1000, max_value=1050))
@@ -195,7 +195,7 @@ def test_generate_LLh_scan_minimun_value(a, b):
         list_values[i]  = scan_function(res.x[i])
     assert_allclose(list_values, res.fun*np.ones_like(res.x))
 
-@pytest.mark.skip
+#@pytest.mark.skip
 @pytest.mark.slowtest
 @given(floats(min_value=1000, max_value=1050),
        floats(min_value=1000, max_value=1050),
