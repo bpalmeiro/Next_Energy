@@ -5,3 +5,5 @@ setup.sh
 *.ipynb_checkpoint
 *.h5
 *.pdf
+.hypothesis
+.cache
