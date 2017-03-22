@@ -78,10 +78,9 @@ def generate_LLh_scan(i, LLh, pars_best, **kwargs):
         '''
 
         n_reduced = np.delete(pars_best, i)
-        func = lambda n_var: LLh(np.insert(n_var, i,
-                                           n_fixed))
-        result  =  sop.minimize(func, n_reduced,
-                                method='Nelder-Mead', **kwargs)
+        func      = lambda n_var: LLh(np.insert(n_var, i, n_fixed))
+        result    =  sop.minimize(func, n_reduced,
+                                  method='Nelder-Mead', **kwargs)
         return result.fun
     return LL_local
 
@@ -112,10 +111,10 @@ def confidence_interval(LLh, pars_best, sigma_value=1., **kwargs):
         root_L       = sop.root(error_root, root_guess_L)
         root_H       = sop.root(error_root, root_guess_H)
 
-        root_list_L[i] = root_L.x[0]
+        root_list_L[i] = float(root_L.x[0])
         root_list_H[i] = root_H.x[0]
 
-    return root_list_L, root_list_H
+    return np.array([root_list_L, root_list_H])
 
 
 def minimize_LLh(func, ydat, pars_0, conf_interval=True, sigma_value = 1.,
