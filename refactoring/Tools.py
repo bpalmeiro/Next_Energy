@@ -150,3 +150,6 @@ def minimize_LLh(func, ydat, pars_0, conf_interval=True, sigma_value = 1.,
     res.chi2 = chi2
     res.conf_interval  = conf_int
     return res
+
+
+#def fit_LLh(hist_data, hist_model_list, )

@@ -92,7 +92,7 @@ def test_LLh_fun_args():
 def test_LLh_fun_model(a1 ,a2, b1, b2):
     '''
     Test the properties of the Lhh_fun return. For any set of arguments, the
-    minimum value for the LL must be with the ones where the model is build
+    minimum value for the LL must be with the ones used for building the model
     from
     '''
     x        = np.linspace(0,10,100)
@@ -108,7 +108,7 @@ def test_LLh_fun_model(a1 ,a2, b1, b2):
 def test_LLh_fun_Poiss_Null(mu):
     '''
     At 0, the logPoiss should return -mu. So, as LLh is -2*Poiss, LL with ydat
-    input equals 0 must return 2*mu
+    input equals 0 must return 2*mu.
     '''
     func     = lambda x: x
     LLh      = tl.generate_LLh_fun(func,0)
@@ -121,7 +121,7 @@ def test_LLh_fun_Poiss_Null(mu):
 def test_LLh_fun_PoissNullList(mu0, mu1, mu2):
     '''
     At 0, the logPoiss should return -mu. So, as LLh is -2*Poiss, LL with ydat
-    input equals 0 must return 2*mu
+    input equals 0 must return 2*mu.
     '''
     mu       = np.array([mu0, mu1, mu2])
     func     = lambda x: x
@@ -135,7 +135,7 @@ def test_LLh_fun_PoissNullList(mu0, mu1, mu2):
        floats(min_value=10, max_value=50))
 def test_LLh_min_StraightLine_NoSmearing(a, b):
     '''
-    Testing minimizing function
+    Testing minimizing function.
     '''
 
     x     = np.linspace(0,10,100)
@@ -151,7 +151,7 @@ def test_LLh_min_StraightLine_NoSmearing(a, b):
 def test_LLh_min_StraightLine_Smearing(a, b):
     '''
     Testing minimizing function with a fit to a straight line without
-    smearing
+    smearing.
     '''
 
     x     = np.linspace(0,10,1000)
@@ -166,7 +166,7 @@ def test_LLh_min_StraightLine_Smearing(a, b):
        floats(min_value=1000, max_value=1050))
 def test_LLh_min_2Gauss_Smearing(a, b):
     '''
-    Testing minimizing function
+    Testing minimizing function.
     '''
     x = np.linspace(0,10,1000)
     def func(arg):
@@ -183,7 +183,9 @@ def test_LLh_min_2Gauss_Smearing(a, b):
 def test_generate_LLh_scan_minimun_value(a, b):
     '''
     Testing scanning LLh function. At minimum must return the minimum value
+    already computed by minimize_LLh.
     '''
+
     x     = np.linspace(0,10,100)
     func  = lambda arg: arg[0]*x+arg[1]
     ydata = func([a,b])
@@ -203,8 +205,11 @@ def test_generate_LLh_scan_minimun_value(a, b):
        floats(min_value=1000, max_value=1050))
 def test_generate_LLh_scan_list(a1, a2, b1, b2):
     '''
-    Testing scanning LLh function. At minimum must return the minimum value
+    Testing scanning LLh function. Any pair of values (b1, b2) different
+    from the ones used to build the model (a1, a2) should yeld a Scan LL
+    greater. So, LL_scan should have a global minimum at (a1, a2).
     '''
+
     res_t = [b1, b2]
     x     = np.linspace(0, 10, 100)
     func  = lambda arg: arg[0]*x+arg[1]
@@ -221,6 +226,12 @@ def test_generate_LLh_scan_list(a1, a2, b1, b2):
 @given(floats  (min_value=100, max_value=150),
        integers(min_value=2,   max_value=10))
 def test_confidence_interval_NoSmearing(a, bins):
+    '''
+    Testing confidence interval function. For a given model (very simple) with
+    no smearing, this confidence interval must be the poissonian variance of 
+    the parameter used for building the model.
+    '''
+    
     x = np.linspace(0, 10, bins)
     func = lambda arg: np.array([a]*len(arg))
     ydata = func(x)
@@ -237,17 +248,18 @@ def test_confidence_interval_NoSmearing(a, bins):
 @given(floats  (min_value=100, max_value=150),
        integers(min_value=2,   max_value=10))
 def test_confidence_interval_Smearing(a, bins):
+    '''
+    Testing confidence interval function. For a given model (very simple) with
+    smearing, this confidence interval must be the poissonian variance of 
+    the parameter value obtained fitting.
+    '''
+    
     x = np.linspace(0, 10, bins)
     func = lambda arg: np.array([a]*len(arg))
     ydata = np.random.poisson(func(x))
     LLh = tl.generate_LLh_fun(func, ydata)
     res   = tl.minimize_LLh(func, ydata, [a], False)
     conf_interval = tl.confidence_interval(LLh, res.x, 1.)
-    print('a', a, res.x)
     test_vals = np.array([np.sqrt(res.x), np.sqrt(res.x)])
-    print('test',test_vals)
     diff = np.abs(conf_interval-np.array([res.x, res.x]))
-    print('diff',diff)
-    hoping_zero = np.sum(test_vals - diff)
-    print('0?',hoping_zero)
     assert_allclose(test_vals, diff, rtol=1e-13)
