@@ -7,8 +7,58 @@ Created on Mon Mar 10 18:24:03 2017
 import scipy.optimize as sop
 import numpy as np
 from scipy.special import gammaln
-from copy import deepcopy
+#from copy import deepcopy
 import scipy.stats as sps
+import scipy.interpolate as spip
+from collections import namedtuple
+
+create_Histogram = namedtuple('Histogram', 'bins hist')
+
+def build_Histogram(data, nbin=None, minlim=None, maxlim=None):
+
+    if not nbin:
+        nbin   =  np.sqrt( len(data) )
+    if minlim  == None:
+        minlim =  data.min()
+    if maxlim  == None:
+        maxlim =  data.max()
+
+    hist, bins = np.histogram(np.array(data), nbin, [minlim, maxlim])
+    bins       = bins[:-1] + np.diff(bins)/2.
+    Histogram  = create_Histogram(bins, hist)
+    return Histogram
+
+
+def generate_model(xrange, hist_model_list, interpolation='linear'):
+    '''
+    Function meant to return a model function from a list of histograms
+    '''
+
+    hist_list = []
+    for hist_model in hist_model_list:
+        pdf  = spip.interp1d(hist_model.bins, hist_model.hist,
+                             kind=interpolation, bounds_error=False)
+        ypdf = pdf(xrange)
+        ypdf[ np.where( np.isnan(ypdf) ) ] = 0.
+        ypdf = ypdf/ypdf.sum()
+        hist_list.append( ypdf )
+
+    hist_list = np.array( hist_list )
+
+    def Model(params):
+        if not len(params) == len(hist_list):
+            raise ValueError('Number of parameters is wrong: ',len(params),
+                             'required')
+        params = params.reshape(len(params), 1)
+        return np.sum( params*hist_list, axis=0 )
+
+    return Model
+
+def fit_LLh(hist_data, hist_model_list, par_guess, labels=None, **kwargs):
+    '''
+    Documentation
+    '''
+    1+1
 
 
 def generalLogPoisson(x, mu):
@@ -25,7 +75,7 @@ def generate_LLh_fun(func, ydat):
     function meant to compute the LogLikelihood.
     Inputs:
         func: function to compute the Likelihood from
-        ydat: data to compute the Likelihood from
+        ydat: data to compute the _list.appendLikelihood from
     Returns:
         Likelihood function where the arguments are only the input function
         ones
@@ -107,7 +157,7 @@ def confidence_interval(LLh, pars_best, sigma_value=1., **kwargs):
 
         LLh_scan     = generate_LLh_scan(i, LLh, pars_best, **kwargs)
 
-        error_root   = lambda n: LLh_scan(n)-sigma_value-LL_min
+        error_root  = lambda n: LLh_scan(n)-sigma_value-LL_min
         root_L       = sop.root(error_root, root_guess_L)
         root_H       = sop.root(error_root, root_guess_H)
 
@@ -152,4 +202,6 @@ def minimize_LLh(func, ydat, pars_0, conf_interval=True, sigma_value = 1.,
     return res
 
 
-#def fit_LLh(hist_data, hist_model_list, )
+
+    
+    
