@@ -1,9 +1,10 @@
 *.csv
 *.pyc
-setup.sh
+#setup.sh
 *.ipynb*
 *.ipynb_checkpoint
 *.h5
 *.pdf
 .hypothesis
 .cache
+*.gitignore

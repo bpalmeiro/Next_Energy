@@ -83,6 +83,20 @@ def test_generate_model_zeros_out_of_range(nbin, minlim, maxlim):
     ydata      = model( np.array([1.]) )
     assert( ydata[0]==0. and ydata[-1]==0 )
 
+#@given(integers(min_value=2 , max_value =100),
+#       integers(min_value=1 , max_value =10 ),
+#       integers(min_value=11, max_value =20 ) )
+def test_generate_model_sum():
+    nbin, minlim, maxlim = 2, 0, 2
+    test_array_1 = np.array([0.5])
+    test_array_1 = np.array([1.5])
+    hist_1       = tl.build_Histogram(test_array_1, nbin, minlim, maxlim)
+    hist_2       = tl.build_Histogram(test_array_2, nbin, minlim, maxlim)
+    
+    xrange     = np.linspace(minlim, maxlim, nbin)
+    model      = tl.generate_model(xrange, [hist_1,hist_2], 'linear')
+    ydata      = model( np.array([1.]) )
+    assert( ydata[0]==ydata[1] )    
 
 @given(integers(min_value=2 , max_value =100),
        integers(min_value=1 , max_value =10 ),
