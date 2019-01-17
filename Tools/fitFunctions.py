@@ -9,6 +9,55 @@ import scipy as sc
 import scipy.optimize as optim
 
 
+def poisson_factor(k, mean):
+    """
+    Probability mass function for a poisson statistics.
+    Faster than scipy.stats.poisson.pmf.
+    """
+    return mean ** k * np.exp(-mean) / np.math.factorial(k)
+
+
+def poisson_sigma(x, default=3):
+    """
+    Get the uncertainty of x (assuming it is poisson-distributed).
+    Set *default* when x is 0 to avoid null uncertainties.
+    """
+    u = x**0.5
+    u[x==0] = default
+    return u
+
+def get_chi2_and_pvalue(ydata, yfit, ndf, sigma=None):
+    """
+    Gets reduced chi2 and p-value
+    Parameters
+    ----------
+    ydata : np.ndarray
+        Data points.
+    yfit : np.ndarray
+        Fit values corresponding to ydata array.
+    sigma : np.ndarray
+        Data errors. If sigma is not given, it takes the poisson case:
+            sigma = sqrt(ydata)
+    ndf : int
+        Number of degrees of freedom
+        (number of data points - number of parameters).
+    Returns
+    -------
+    chi2 : float
+        Reduced chi2 computed as:
+            chi2 = [sum(ydata - yfit)**2 / sigma**2] / ndf
+    pvalue : float
+        Fit p-value.
+    """
+
+    if sigma is None:
+        sigma = poisson_sigma(ydata)
+
+    chi2   = np.sum(((ydata - yfit) / sigma)**2)
+    pvalue = sc.stats.chi2.sf(chi2, ndf)
+
+    return chi2 / ndf, pvalue
+
 def in_range(data, minval=-np.inf, maxval=np.inf):
     """
     Find values in range.
