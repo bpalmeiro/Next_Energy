@@ -102,13 +102,28 @@ class Fit():
         '''
         chi2    = np.array([0, 0], dtype=np.float64)
         nevsmin = nevsmin.reshape(len(nevsmin), 1)
-       
+
         for dim in self.dimension:
             ypdf  = np.sum(nevsmin * self.nevs0 * self.PDF_Val[dim], axis=0)
             ydat  = self.spectrum[dim]
             chi2 += np.array(fitf.get_chi2_and_pvalue(ydat, ypdf, len(nevsmin)), dtype=np.float64)
         return chi2
     
+    def GetIminuitChi2(self, ratio):
+        '''
+        function returning the total chi2, given a certain set of fit parameters ratio. Used by iminuit fits
+        '''
+        ratio = ratio.reshape(len(ratio), 1)
+        chi2 = 0.
+
+        for dim in self.dimension:
+            ypdf = np.sum(ratio*self.nevs0*self.PDF_Val[dim], axis=0)
+            ydat = self.spectrum[dim]
+            yerr = np.maximum(np.ones(len(ydat)),np.sqrt(ydat))
+            chi2 += np.sum( (ydat-ypdf)**2 / yerr**2)
+
+        return chi2
+
     def GetError(self, nevsmin, **kwargs):
         '''
         function meant to compute the LogLikelihood fit errors using nevsmin as
