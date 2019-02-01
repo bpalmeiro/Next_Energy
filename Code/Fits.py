@@ -13,7 +13,7 @@ def generalLogPoisson(x, mu):
     Returns the natural logarithm of the probability value of "x"
     for a Poisson distribution with mean "mu"
     '''
-    return (-mu+x*np.log(mu+0.00001)-gammaln(x+1))
+    return (-mu+x*np.log(mu+1e-13)-gammaln(x+1))
 
 
 class Fit():
