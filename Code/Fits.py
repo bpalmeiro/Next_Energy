@@ -63,7 +63,7 @@ class Fit():
         '''
         ratio = ratio.reshape(len(np.array(ratio)), 1)
         fit   = self.LLh
-        res   = sop.minimize(fit, ratio, method='TNC', **kwargs)
+        res   = sop.minimize(fit, ratio, method='Nelder-Mead', **kwargs)
         chi2  = -1
         err   = -1
         if (res.success):
@@ -89,7 +89,7 @@ class Fit():
         i = 0
         for aux_s in np.linspace(0, 2*aux, npoint):
             fit = lambda x_nevs: self.LLh(np.insert(x_nevs, fixn, aux_s))
-            res = sop.minimize(fit, aux_evs, method='SLSQP', **kwargs)
+            res = sop.minimize(fit, aux_evs, method='Nelder-Mead', **kwargs)
             res_list[i] = res.fun-fun_aux
             i += 1
             if not(res.success):
@@ -124,7 +124,7 @@ class Fit():
                                                                    fixn,
                                                                    aux_s)))
             res = lambda aux_ss: (sop.minimize(fit(aux_ss), aux_evs,
-                                               method='SLSQP',
+                                               method='Nelder-Mead',
                                                **kwargs)).fun-1-ll_min
             res_list[fixn] = (sop.root(res, aux-aux**0.5).x)[0]
         return nevsmin-res_list
